@@ -17,7 +17,7 @@ templates = Jinja2Templates(directory="templates")
 security = HTTPBasic()
 
 @app.post("/login_session", status_code=201)
-def post_login_session(credentials: HTTPBasicCredentials = Depends(security)):
+def post_login_session(response: Response, credentials: HTTPBasicCredentials = Depends(security)):
     correct_username = secrets.compare_digest(credentials.username, "4dm1n")
     correct_password = secrets.compare_digest(credentials.password, "NotSoSecurePa$$")
     if not (correct_username and correct_password):
