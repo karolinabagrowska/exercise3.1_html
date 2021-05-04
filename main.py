@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
+from typing import Optional
 
 class Token(BaseModel):
     token: str
@@ -45,4 +46,30 @@ def post_login_token(response: Response, credentials: HTTPBasicCredentials = Dep
         )
     return {"token": S_TOKEN}
 
-    
+@app.get("/welcome_session", status_code=200)
+def get_welcome_session(response: Response, format: Optional[str] = None, session_token: str = Cookie(None)):
+    if not session_token or session_token != S_TOKEN:
+        raise HTTPException(status_code=401, detail="Unathorised")
+    if format == "json":
+        response.headers["Content-Type"] = "application/json"
+        return {"message": "Welcome!"}
+    elif format == "html":
+        response.headers["Content-Type"] = "text/html"
+        return "<h1>Welcome!</h1>"
+    else:
+        response.headers["Content-Type"] = "text/plain"
+        return "Welcome!"
+
+@app.get("/welcome_token", status_code=200)
+def get_welcome_token(response: Response, token: Optional[str] = None, format: Optional[str] = None):
+    if not token or token != S_TOKEN:
+        raise HTTPException(status_code=401, detail="Unathorised")
+    if format == "json":
+        response.headers["Content-Type"] = "application/json"
+        return {"message": "Welcome!"}
+    elif format == "html":
+        response.headers["Content-Type"] = "text/html"
+        return "<h1>Welcome!</h1>"
+    else:
+        response.headers["Content-Type"] = "text/plain"
+        return "Welcome!"
