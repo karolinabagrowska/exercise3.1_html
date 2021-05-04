@@ -57,8 +57,7 @@ def get_welcome_session(response: Response, format: Optional[str] = None, sessio
         response.headers["Content-Type"] = "text/html"
         return "<h1>Welcome!</h1>"
     else:
-        response.headers["Content-Type"] = "text/plain"
-        return "Welcome!"
+        return Response(content="Welcome!")
 
 @app.get("/welcome_token", status_code=200)
 def get_welcome_token(response: Response, token: Optional[str] = None, format: Optional[str] = None):
@@ -71,5 +70,4 @@ def get_welcome_token(response: Response, token: Optional[str] = None, format: O
         response.headers["Content-Type"] = "text/html"
         return "<h1>Welcome!</h1>"
     else:
-        response.headers["Content-Type"] = "text/plain"
-        return "Welcome!"
+        return Response(content="Welcome!")
