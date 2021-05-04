@@ -22,16 +22,16 @@ def post_login_session(response: Response, credentials: HTTPBasicCredentials = D
     correct_password = secrets.compare_digest(credentials.password, "NotSoSecurePa$$")
     if not (correct_username and correct_password):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Basic"},
         )
     response.set_cookie(key="session_token", value=S_TOKEN)
     return credentials.username
 
-@app.post("/login_token")
+@app.post("/login_token", status_code=201)
 def post_login_token(*, response: Response, session_token: str = Cookie(None)):
     if session_token != S_TOKEN:
-        raise HTTPException(status_code=402, detail="Unathorised")
+        raise HTTPException(status_code=401, detail="Unathorised")
     else:
         return {"token": S_TOKEN}
