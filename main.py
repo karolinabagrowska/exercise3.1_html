@@ -16,6 +16,11 @@ templates = Jinja2Templates(directory="templates")
 
 security = HTTPBasic()
 
+@app.get("/hello", response_class=HTMLResponse)
+def get_hello(request: Request):
+    date_today = date.today()
+    return templates.TemplateResponse("index.html.j2", {"request": request ,"date_today": date_today})
+
 @app.post("/login_session", status_code=201)
 def post_login_session(response: Response, credentials: HTTPBasicCredentials = Depends(security)):
     correct_username = secrets.compare_digest(credentials.username, "4dm1n")
@@ -39,3 +44,5 @@ def post_login_token(response: Response, credentials: HTTPBasicCredentials = Dep
             headers={"WWW-Authenticate": "Basic"},
         )
     return {"token": S_TOKEN}
+
+    
