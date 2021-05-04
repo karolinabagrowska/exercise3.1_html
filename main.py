@@ -12,9 +12,7 @@ class Token(BaseModel):
     token: str
 
 S_TOKENS = []
-current_s_token = ""
 T_TOKENS = []
-current_t_token = ""
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -28,7 +26,6 @@ def get_hello(request: Request):
 
 @app.post("/login_session", status_code=201)
 def post_login_session(response: Response, credentials: HTTPBasicCredentials = Depends(security)):
-    global current_s_token
     correct_username = secrets.compare_digest(credentials.username, "4dm1n")
     correct_password = secrets.compare_digest(credentials.password, "NotSoSecurePa$$")
     if not (correct_username and correct_password):
@@ -37,15 +34,14 @@ def post_login_session(response: Response, credentials: HTTPBasicCredentials = D
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Basic"},
         )
-    current_s_token = str(uuid.uuid4())
-    S_TOKENS.append(current_s_token)
+    new_token = str(uuid.uuid4())
+    S_TOKENS.append(new_token)
     if len(S_TOKENS) == 4:
         S_TOKENS.pop(0)
-    response.set_cookie(key="session_token", value=current_s_token)
+    response.set_cookie(key="session_token", value=new_token)
 
 @app.post("/login_token", status_code=201)
 def post_login_token(response: Response, credentials: HTTPBasicCredentials = Depends(security)):
-    global current_t_token
     correct_username = secrets.compare_digest(credentials.username, "4dm1n")
     correct_password = secrets.compare_digest(credentials.password, "NotSoSecurePa$$")
     if not (correct_username and correct_password):
@@ -54,11 +50,11 @@ def post_login_token(response: Response, credentials: HTTPBasicCredentials = Dep
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Basic"},
         )
-    current_t_token = str(uuid.uuid4())
-    T_TOKENS.append(current_t_token)
+    new_token = str(uuid.uuid4())
+    T_TOKENS.append(new_token)
     if len(T_TOKENS) == 4:
         T_TOKENS.pop(0)
-    return {"token": current_t_token}
+    return {"token": new_token}
 
 @app.get("/welcome_session", status_code=200)
 def get_welcome_session(response: Response, format: Optional[str] = None, session_token: str = Cookie(None)):
@@ -92,24 +88,20 @@ def get_welcome_token(response: Response, token: Optional[str] = None, format: O
 
 @app.delete("/logout_session")
 def delete_logout_session(request: Request, response: Response, format: Optional[str] = None, session_token: str = Cookie(None)):
-    global current_s_token
     global S_TOKENS
     if session_token not in S_TOKENS:
         raise HTTPException(status_code=401, detail="Unathorised")
-    S_TOKENS.remove(current_s_token)
-    current_s_token = ""
+    S_TOKENS.remove(session_token)
     params = str(request.query_params)
     response = RedirectResponse(url=f'/logged_out?{params}', status_code=302)
     return response
 
 @app.delete("/logout_token")
 def delete_logout_token(request: Request, response: Response, format: Optional[str] = None, token: Optional[str] = None):
-    global current_t_token
     global T_TOKENS
     if token not in T_TOKENS:
         raise HTTPException(status_code=401, detail="Unathorised")
-    T_TOKENS.remove(current_t_token)
-    current_t_token = ""
+    T_TOKENS.remove(token)
     params = str(request.query_params)
     response = RedirectResponse(url=f'/logged_out?{params}', status_code=302)
     return response
