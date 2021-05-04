@@ -26,8 +26,8 @@ def post_login_session(credentials: HTTPBasicCredentials = Depends(security)):
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Basic"},
         )
-    return credentials.username
     response.set_cookie(key="session_token", value=S_TOKEN)
+    return credentials.username
 
 @app.post("/login_token")
 def post_login_token(*, response: Response, session_token: str = Cookie(None)):
